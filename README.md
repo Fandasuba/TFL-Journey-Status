@@ -16,3 +16,8 @@ To get the app to work, you will need to do the following:
 - Place whatever the primary key code is in your TFL dev account where the = is and save the file. You can do the same for SECONDARY_KEY, but it is not necessary.
 
 You can now type `cd tfl-travel-widget` or type `cd` and press tab to auto select the folder to speed things up. Now type `npm run dev` once you're in the main app folder on your terminal to demo the site.
+
+# To Do List
+- Create fake homepage to improve things slightly
+- Update styling for the travel line table for underground service checks.
+- Update service status for specific lines.
