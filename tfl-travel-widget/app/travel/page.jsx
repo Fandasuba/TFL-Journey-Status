@@ -44,38 +44,40 @@ export default async function TravelPage() {
               </div>
 
               <div className="grid gap-3">
-                {data.lines.map((line, index) => {
-                  const statusType = getStatusClass(line.lineStatuses[0].statusSeverityDescription);
-                  const lineColorClass = getLineColorClass(line.name);
-                  return (
-                    <div 
-                      key={line.id} 
-                      className={`status-line ${statusType}`}
-                      style={{ animationDelay: `${index * 0.1}s` }}
-                    >
-                      <div className="line-info">
-                        <div className="line-indicator"></div>
-                        <div className="line-details">
-                          <h3 className={lineColorClass}>
-                            {line.name.replace(' line', '').toUpperCase()}
-                          </h3>
-                          <div className="line-id">LINE {line.id.toUpperCase()}</div>
-                        </div>
-                      </div>
+              {data.lines.map((line, index) => {
+                const statusType = getStatusClass(line.lineStatuses[0].statusSeverityDescription);
+                const lineColorClass = getLineColorClass(line.name);
+                
+                return (
+                  <div 
+                    key={line.id} 
+                    className={`status-line ${statusType}`}
+                    style={{ animationDelay: `${index * 0.1}s` }}
+                  >
+                    <div className="line-info">
+                      <div className={`line-indicator ${lineColorClass}`}></div> {/* background applied here */}
                       
-                      <div className="line-actions">
-                        <div className={getStatusCssClass(statusType)}>
-                          {line.lineStatuses[0].statusSeverityDescription.toUpperCase()}
-                        </div>
-                        
-                        <Link href={`/travel/${line.id}`} className="btn-secondary">
-                          DETAILS →
-                        </Link>
+                      <div className="line-details">
+                        <h3>
+                          {line.name.replace(' line', '').toUpperCase()}
+                        </h3>
+                        <div className="line-id">LINE {line.id.toUpperCase()}</div>
                       </div>
                     </div>
-                  );
-                })}
-              </div>
+                    
+                    <div className="line-actions">
+                      <div className={getStatusCssClass(statusType)}>
+                        {line.lineStatuses[0].statusSeverityDescription.toUpperCase()}
+                      </div>
+                      
+                      <Link href={`/travel/${line.id}`} className="btn-secondary">
+                        DETAILS →
+                      </Link>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
 
               <div className="mt-8 pt-6 border-t">
                 <div className="flex-between">
