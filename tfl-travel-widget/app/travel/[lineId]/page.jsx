@@ -1,4 +1,6 @@
 import Link from 'next/link';
+import Header from '@/app/components/Header';
+import { getStatusClass, getStatusCssClass, getLineColorClass } from '@/app/utils/statusCheck';
 
 async function getLineData(lineId) {
   const response = await fetch(`http://localhost:3000/api/tube-status`, {
@@ -10,12 +12,8 @@ async function getLineData(lineId) {
   }
  
   const data = await response.json();
-  
-  console.log('Looking for lineId:', lineId);
-  console.log('Available line IDs:', data.lines.map(line => line.id));
-  
   const lineData = data.lines.find(line => line.id === lineId);
-  
+ 
   return {
     lineData,
     lastUpdated: data.lastUpdated
@@ -28,53 +26,112 @@ export default async function LineDetailsPage({ params }) {
  
   if (!lineData) {
     return (
-      <div className="container mx-auto p-6">
-        <h1 className="text-3xl font-bold text-red-600">Line not found</h1>
-        <p>Looking for line ID: {resolvedParams.lineId}</p>
-        <Link href="/travel" className="text-blue-600 hover:text-blue-900 mt-4 inline-block">
-          ← Go Back
-        </Link>
+      <div className="page-layout">
+        <Header showBackButton={true} backText="Back to Status Board" backHref="/travel" />
+        
+        <main className="error-container">
+          <div className="container">
+            <div className="max-w-2xl mx-auto transport-screen text-center" style={{padding: '32px'}}>
+              <div className="error-content">
+                <div className="error-icon">
+                  <span>!</span>
+                </div>
+                <h1 className="text-3xl transport-text mb-4">
+                  LINE NOT FOUND
+                </h1>
+                <p className="transport-text-white mb-2">
+                  REQUESTED LINE ID: {resolvedParams.lineId.toUpperCase()}
+                </p>
+                <p className="text-gray" style={{fontSize: '14px'}}>
+                  The specified line could not be located in the system
+                </p>
+              </div>
+              
+              <Link href="/travel" className="btn-secondary">
+                ← RETURN TO STATUS BOARD
+              </Link>
+            </div>
+          </div>
+        </main>
       </div>
     );
   }
  
   const status = lineData.lineStatuses[0];
-  const hasDisruption = status.statusSeverityDescription !== 'Good Service';
+  const statusType = getStatusClass(status.statusSeverityDescription);
+  const hasDisruption = statusType !== 'good';
+  const lineColorClass = getLineColorClass(lineData.name);
  
   return (
-    <div className="container mx-auto p-6">
-      <div className="mb-4 text-sm text-gray-600">
-        Last Updated: {new Date(lastUpdated).toLocaleString()}
-      </div>
-     
-      <h1 className="text-4xl font-bold mb-6">{lineData.name} Line</h1>
-     
-      <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-        <h2 className="text-xl font-semibold mb-4">Current Status</h2>
-        <span className={`px-4 py-2 rounded-full text-sm font-medium ${
-          hasDisruption
-            ? 'bg-red-100 text-red-800'
-            : 'bg-green-100 text-green-800'
-        }`}>
-          {status.statusSeverityDescription}
-        </span>
-      </div>
-     
-      {hasDisruption && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
-          <h3 className="text-lg font-semibold text-red-800 mb-2">Service Disruption</h3>
-          <p className="text-red-700">
-            {status.reason || 'No additional details available'}
-          </p>
+    <div className="page-layout">
+      <Header showBackButton={true} backText="Back to Status Board" backHref="/travel" />
+
+      <main className="main-content">
+        <div className="container">
+          <div className="max-w-4xl mx-auto">
+            <div className="transport-screen" style={{padding: '32px'}}>
+              <div className="flex-between mb-8">
+                <div>
+                  <h1 className={`text-4xl flicker mb-2 ${lineColorClass}`}>
+                    {lineData.name.replace(' line', '').toUpperCase()} LINE
+                  </h1>
+                  <div className="transport-text" style={{fontSize: '14px'}}>
+                    LINE ID: {lineData.id.toUpperCase()}
+                  </div>
+                </div>
+                <div style={{textAlign: 'right'}}>
+                  <div className="transport-text" style={{fontSize: '14px'}}>LAST UPDATED</div>
+                  <div className="transport-text-white text-lg" style={{fontFamily: 'JetBrains Mono, monospace'}}>
+                    {new Date(lastUpdated).toLocaleString('en-GB', {
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              <div className="card-dark mb-8">
+                <h2 className="transport-text text-xl mb-4">CURRENT STATUS</h2>
+                <div className={`${getStatusCssClass(statusType)}`} style={{display: 'inline-block', padding: '12px 24px', fontSize: '18px'}}>
+                  {status.statusSeverityDescription.toUpperCase()}
+                </div>
+              </div>
+
+              {hasDisruption && (
+                <div className="alert-disruption">
+                  <h3 className="alert-title">
+                    <div className="alert-icon">
+                      <span>!</span>
+                    </div>
+                    SERVICE DISRUPTION DETAILS
+                  </h3>
+                  <div className="alert-content">
+                    <p className="alert-text">
+                      {status.reason || 'NO ADDITIONAL DETAILS AVAILABLE AT THIS TIME'}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex-between pt-6 border-t">
+                <Link href="/travel" className="btn-secondary" style={{padding: '12px 24px'}}>
+                  ← BACK TO STATUS BOARD
+                </Link>
+                
+                <div className="transport-text" style={{fontSize: '14px'}}>
+                  <div className="flex-items-center gap-2">
+                    <div style={{width: '8px', height: '8px', background: '#00ff00', borderRadius: '50%'}} className="pulse"></div>
+                    <span>LIVE MONITORING ACTIVE</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      )}
-     
-      <Link
-        href="/travel"
-        className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-      >
-        ← Go Back
-      </Link>
+      </main>
     </div>
   );
 }
